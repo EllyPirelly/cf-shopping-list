@@ -3,7 +3,7 @@ import { StyleSheet, View, FlatList, Text, TextInput, KeyboardAvoidingView, Touc
 import { collection, addDoc, onSnapshot, query, where } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ShoppingLists = ({ db, route }) => {
+const ShoppingLists = ({ db, route, isConnected }) => {
   const { userID } = route.params;
   const [lists, setLists] = useState([]);
   const [listName, setListName] = useState("");
@@ -22,21 +22,29 @@ const ShoppingLists = ({ db, route }) => {
     }
   }
 
+  let unsubShoppinglists;
+
   useEffect(() => {
-    // query conditions
-    // whenever it's changed with add, remove or update query, the onSnapshot callback is called
-    const q = query(collection(db, "shoppinglists"), where("uid", "==", userID));
-    // code to execute when component mounted or updated
-    const unsubShoppinglists = onSnapshot(q, async (documentsSnapshot) => {
-      let newLists = [];
+    if (isConnected === true) {
 
-      documentsSnapshot.forEach(doc => {
-        newLists.push({ id: doc.id, ...doc.data() })
+      // unregister current onSnapshot() listener to avoid registering multiple listeners when useEffect code is re-executed
+      if (unsubShoppinglists) unsubShoppinglists();
+      unsubShoppinglists = null;
+
+      // query conditions
+      // whenever it's changed with add, remove or update query, the onSnapshot callback is called
+      const q = query(collection(db, "shoppinglists"), where("uid", "==", userID));
+      // code to execute when component mounted or updated
+      unsubShoppinglists = onSnapshot(q, (documentsSnapshot) => {
+        let newLists = [];
+        documentsSnapshot.forEach(doc => {
+          newLists.push({ id: doc.id, ...doc.data() })
+        });
+        cacheShoppingLists(newLists);
+        setLists(newLists);
       });
+    } else loadCachedLists();
 
-      cacheShoppingLists(newLists);
-      setLists(newLists);
-    });
 
     // Clean up code
     return () => {
@@ -44,7 +52,8 @@ const ShoppingLists = ({ db, route }) => {
       // checks if unsubShoppingLists is not undefined
       if (unsubShoppinglists) unsubShoppinglists();
     }
-  }, []);
+    // isConnected prop as a dependency value allows the component to call the callback of useEffect whenever the isConnected props' value changes
+  }, [isConnected]);
 
   const cacheShoppingLists = async (listsToCache) => {
     try {
@@ -53,6 +62,12 @@ const ShoppingLists = ({ db, route }) => {
       console.log(error.message);
     }
   };
+
+  // called if isConnected in useEffect is false
+  const loadCachedLists = async () => {
+    const cachedLists = await AsyncStorage.getItem("shopping_lists") || [];
+    setLists(JSON.parse(cachedLists));
+  }
 
   return (
     <View style={styles.container}>
@@ -65,41 +80,42 @@ const ShoppingLists = ({ db, route }) => {
           </View>
         }
       />
+      {(isConnected === true) ?
+        <View style={styles.listForm}>
+          <TextInput
+            style={styles.listName}
+            placeholder="List Name"
+            value={listName}
+            onChangeText={setListName}
+          />
+          <TextInput
+            style={styles.item}
+            placeholder="Item #1"
+            value={item1}
+            onChangeText={setItem1}
+          />
+          <TextInput
+            style={styles.item}
+            placeholder="Item #2"
+            value={item2}
+            onChangeText={setItem2}
+          />
 
-      <View style={styles.listForm}>
-        <TextInput
-          style={styles.listName}
-          placeholder="List Name"
-          value={listName}
-          onChangeText={setListName}
-        />
-        <TextInput
-          style={styles.item}
-          placeholder="Item #1"
-          value={item1}
-          onChangeText={setItem1}
-        />
-        <TextInput
-          style={styles.item}
-          placeholder="Item #2"
-          value={item2}
-          onChangeText={setItem2}
-        />
-
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => {
-            const newList = {
-              uid: userID,
-              name: listName,
-              items: [item1, item2]
-            }
-            addShoppingList(newList);
-          }}
-        >
-          <Text style={styles.addButtonText}>Add</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => {
+              const newList = {
+                uid: userID,
+                name: listName,
+                items: [item1, item2]
+              }
+              addShoppingList(newList);
+            }}
+          >
+            <Text style={styles.addButtonText}>Add</Text>
+          </TouchableOpacity>
+        </View> : null
+      }
 
       {Platform.OS === "ios" ? <KeyboardAvoidingView behavior="padding" /> : null}
     </View>

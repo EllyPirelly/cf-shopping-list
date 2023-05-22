@@ -1,10 +1,12 @@
-import { LogBox } from 'react-native';
+import { useEffect } from "react";
+import { Alert, LogBox } from 'react-native';
 // native navigation
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useNetInfo } from "@react-native-community/netinfo";
 // firebase
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, disableNetwork, enableNetwork } from "firebase/firestore";
 import ShoppingLists from './components/ShoppingLists';
 import Welcome from './components/Welcome';
 
@@ -13,6 +15,7 @@ LogBox.ignoreLogs(["AsyncStorage has been extracted from"]);
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+  const connectionStatus = useNetInfo();
   // firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBN_SsxgUkruSM1pBU4utlDDrsz_Ycrblo",
@@ -29,6 +32,16 @@ const App = () => {
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
 
+  useEffect(() => {
+    if (connectionStatus.isConnected === false) {
+      Alert.alert("Connection Lost!");
+      disableNetwork(db);
+    } else if (connectionStatus.isConnected === true) {
+      enableNetwork(db);
+    }
+    // if the value of the dependency array changes, the useEffect code will be re-executed
+  }, [connectionStatus.isConnected]);
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -42,7 +55,9 @@ const App = () => {
         <Stack.Screen
           name="ShoppingLists"
         >
-          {props => <ShoppingLists db={db} {...props} />}
+          {props => <ShoppingLists
+            isConnected={connectionStatus.isConnected}
+            db={db} {...props} />}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
