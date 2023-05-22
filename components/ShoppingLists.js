@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { StyleSheet, View, FlatList, Text, TextInput, KeyboardAvoidingView, TouchableOpacity, Alert } from 'react-native';
 import { collection, addDoc, onSnapshot, query, where } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ShoppingLists = ({ db, route }) => {
   const { userID } = route.params;
