@@ -26,7 +26,6 @@ const ShoppingLists = ({ db, route, isConnected }) => {
 
   useEffect(() => {
     if (isConnected === true) {
-
       // unregister current onSnapshot() listener to avoid registering multiple listeners when useEffect code is re-executed
       if (unsubShoppinglists) unsubShoppinglists();
       unsubShoppinglists = null;
