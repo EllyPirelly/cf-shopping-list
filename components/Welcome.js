@@ -1,5 +1,5 @@
-import { StyleSheet, View, Text, TouchableOpacity, Alert } from "react-native";
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { StyleSheet, View, Text, TouchableOpacity, Alert } from 'react-native';
+import { getAuth, signInAnonymously } from 'firebase/auth';
 
 const Welcome = ({ navigation }) => {
   const auth = getAuth();
@@ -8,11 +8,11 @@ const Welcome = ({ navigation }) => {
   const signInUser = () => {
     signInAnonymously(auth)
       .then(result => {
-        navigation.navigate("ShoppingLists", { userID: result.user.uid });
-        Alert.alert("Signed in Successfully!");
+        navigation.navigate('ShoppingLists', { userID: result.user.uid });
+        Alert.alert('Signed in successfully!');
       })
       .catch((error) => {
-        Alert.alert("Unable to sign in, try later again.");
+        Alert.alert('Unable to sign in, try later again.');
       })
   }
 
@@ -31,24 +31,24 @@ const Welcome = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    alignItems: 'center',
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
   },
   appTitle: {
-    fontWeight: "600",
     fontSize: 45,
-    marginBottom: 100
+    fontWeight: '600',
+    marginBottom: 100,
   },
   startButton: {
-    backgroundColor: "#000",
+    alignItems: 'center',
+    backgroundColor: '#000',
     height: 50,
-    width: "88%",
-    justifyContent: "center",
-    alignItems: "center"
+    justifyContent: 'center',
+    width: '88%',
   },
   startButtonText: {
-    color: "#FFF",
+    color: '#FFF',
   }
 });
 

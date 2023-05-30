@@ -1,24 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, FlatList, Text, TextInput, KeyboardAvoidingView, TouchableOpacity, Alert } from 'react-native';
-import { collection, addDoc, onSnapshot, query, where } from "firebase/firestore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { collection, addDoc, onSnapshot, query, where } from 'firebase/firestore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ShoppingLists = ({ db, route, isConnected }) => {
   const { userID } = route.params;
   const [lists, setLists] = useState([]);
-  const [listName, setListName] = useState("");
-  const [item1, setItem1] = useState("");
-  const [item2, setItem2] = useState("");
+  const [listName, setListName] = useState('');
+  const [item1, setItem1] = useState('');
+  const [item2, setItem2] = useState('');
 
   const addShoppingList = async (newList) => {
 
-    const newListRef = await addDoc(collection(db, "shoppinglists"), newList);
+    const newListRef = await addDoc(collection(db, 'shoppinglists'), newList);
 
     if (newListRef.id) {
       setLists([newList, ...lists]);
-      Alert.alert(`The list "${listName}" has been added.`);
+      Alert.alert(`The list '${listName}' has been added.`);
     } else {
-      Alert.alert("Unable to add. Please try later");
+      Alert.alert('Unable to add. Please try again later.');
     }
   }
 
@@ -32,7 +32,7 @@ const ShoppingLists = ({ db, route, isConnected }) => {
 
       // query conditions
       // whenever it's changed with add, remove or update query, the onSnapshot callback is called
-      const q = query(collection(db, "shoppinglists"), where("uid", "==", userID));
+      const q = query(collection(db, 'shoppinglists'), where('uid', '==', userID));
       // code to execute when component mounted or updated
       unsubShoppinglists = onSnapshot(q, (documentsSnapshot) => {
         let newLists = [];
@@ -64,7 +64,7 @@ const ShoppingLists = ({ db, route, isConnected }) => {
 
   // called if isConnected in useEffect is false
   const loadCachedLists = async () => {
-    const cachedLists = await AsyncStorage.getItem("shopping_lists") || [];
+    const cachedLists = await AsyncStorage.getItem('shopping_lists') || [];
     setLists(JSON.parse(cachedLists));
   }
 
@@ -75,7 +75,7 @@ const ShoppingLists = ({ db, route, isConnected }) => {
         data={lists}
         renderItem={({ item }) =>
           <View style={styles.listItem}>
-            <Text >{item.name}: {item.items.join(", ")}</Text>
+            <Text >{item.name}: {item.items.join(', ')}</Text>
           </View>
         }
       />
@@ -83,19 +83,19 @@ const ShoppingLists = ({ db, route, isConnected }) => {
         <View style={styles.listForm}>
           <TextInput
             style={styles.listName}
-            placeholder="List Name"
+            placeholder='List Name'
             value={listName}
             onChangeText={setListName}
           />
           <TextInput
             style={styles.item}
-            placeholder="Item #1"
+            placeholder='Item #1'
             value={item1}
             onChangeText={setItem1}
           />
           <TextInput
             style={styles.item}
-            placeholder="Item #2"
+            placeholder='Item #2'
             value={item2}
             onChangeText={setItem2}
           />
@@ -116,72 +116,60 @@ const ShoppingLists = ({ db, route, isConnected }) => {
         </View> : null
       }
 
-      {Platform.OS === "ios" ? <KeyboardAvoidingView behavior="padding" /> : null}
+      {Platform.OS === 'ios' ? <KeyboardAvoidingView behavior='padding' /> : null}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
   listItem: {
-    height: 70,
-    justifyContent: "center",
-    paddingHorizontal: 30,
+    borderBottomColor: '#AAA',
     borderBottomWidth: 1,
-    borderBottomColor: "#AAA",
     flex: 1,
-    flexGrow: 1
+    flexGrow: 1,
+    height: 70,
+    justifyContent: 'center',
+    paddingHorizontal: 30,
   },
   listForm: {
-    flexBasis: 275,
+    backgroundColor: '#CCC',
     flex: 0,
+    flexBasis: 275,
     margin: 15,
     padding: 15,
-    backgroundColor: "#CCC"
   },
   listName: {
+    borderColor: '#555',
+    borderWidth: 2,
+    fontWeight: '600',
     height: 50,
-    padding: 15,
-    fontWeight: "600",
-    marginRight: 50,
     marginBottom: 15,
-    borderColor: "#555",
-    borderWidth: 2
+    marginRight: 50,
+    padding: 15,
   },
   item: {
+    borderColor: '#555',
+    borderWidth: 2,
     height: 50,
-    padding: 15,
-    marginLeft: 50,
     marginBottom: 15,
-    borderColor: "#555",
-    borderWidth: 2
+    marginLeft: 50,
+    padding: 15,
   },
   addButton: {
-    justifyContent: "center",
-    alignItems: "center",
+    alignItems: 'center',
+    backgroundColor: '#000',
+    color: '#FFF',
     height: 50,
-    backgroundColor: "#000",
-    color: "#FFF"
+    justifyContent: 'center',
   },
   addButtonText: {
-    color: "#FFF",
-    fontWeight: "600",
-    fontSize: 20
+    color: '#FFF',
+    fontSize: 20,
+    fontWeight: '600',
   },
-  logoutButton: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-    backgroundColor: "#C00",
-    padding: 10,
-    zIndex: 1
-  },
-  logoutButtonText: {
-    color: "#FFF",
-    fontSize: 10
-  }
 });
 
 export default ShoppingLists;
